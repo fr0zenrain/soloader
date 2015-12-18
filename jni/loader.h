@@ -7,6 +7,7 @@ void* ldopen(const char* filename, int flags);
 void* ldsym(void* handle, const char* symbol);
 int ldclose(void* handle);
 
-typedef int (*fJNI_OnLoad)(void* a, int n);
+typedef int (*JNI_CreateJavaVM_Type)(JavaVM**, JNIEnv**, void*);
+typedef int (*fJNI_OnLoad)(JavaVM* vm, int n);
 
 #endif

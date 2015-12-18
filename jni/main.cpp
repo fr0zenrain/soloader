@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <dlfcn.h>
 #include "loader.h"
 
 extern int glog_level;
@@ -118,6 +119,21 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	void* dvm = dlopen("/system/lib/libdvm.so",RTLD_LAZY);
+	JNI_CreateJavaVM_Type JNI_CreateJavaVM_Func = (JNI_CreateJavaVM_Type)dlsym(dvm,"JNI_CreateJavaVM");
+	JavaVM* vm = NULL;
+	JNIEnv* env = NULL;
+	JavaVMInitArgs initArgs;
+	initArgs.version = 0x10006;
+	initArgs.nOptions = 0;
+	initArgs.ignoreUnrecognized = 0;
+	if (JNI_CreateJavaVM_Func(&vm, &env, &initArgs) < 0)
+	{
+		dlclose(dvm);
+		ldclose(fd);
+		return -1;
+	}
+	
 	jni = (fJNI_OnLoad) ldsym(fd, "JNI_OnLoad");
 
 	if (jni) {
@@ -126,9 +142,12 @@ int main(int argc, char* argv[]) {
 			printf("break! please skip\n");
 			__asm__("loop0: b loop0");//can BKPT ?
 		}
-		jni(0, 0);
+		jni(vm, 0);
 	}
-
+	
+	vm->DestroyJavaVM();
+	dlclose(dvm);
+	
 	ldclose(fd);
 
 	return 1;
