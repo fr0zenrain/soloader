@@ -568,7 +568,7 @@ int open_library(const char* name) {
 
 static soinfo* load_library(const char* name) {
 	// Open the file.
-	loader_printf(LOG_DBG, "open %s\n", name);
+	loader_printf(LOG_INFO, "open %s\n", name);
 
 	int fd = open_library(name);
 	if (fd == -1) {
@@ -595,6 +595,7 @@ static soinfo* load_library(const char* name) {
 	si->dynamic = NULL;
 	si->phnum = elf_reader.phdr_count();
 	si->phdr = elf_reader.loaded_phdr();
+	
 	return si;
 }
 
@@ -1052,6 +1053,14 @@ void soinfo::CallConstructors() {
 				const char* library_name = strtab + d->d_un.d_val;
 				//loader_printf(LOG_DBG,"\"%s\": calling constructors in DT_NEEDED \"%s\"\n", name, library_name);
 				//find_loaded_library(library_name)->CallConstructors();
+				soinfo* si = find_loaded_library(library_name);
+				if (!strcmp(si->name, "libc.so") || !strcmp(si->name, "libstdc++.so")
+				|| !strcmp(si->name, "libm.so") || !strcmp(si->name, "libz.so")
+				|| !strcmp(si->name, "libdl.so")
+				|| !strcmp(si->name, "liblog.so"))
+			    ;
+		    else
+				    si->CallConstructors();
 			}
 		}
 	}
@@ -1412,6 +1421,8 @@ bool soinfo_link_image(soinfo* si, bool breloc, ElfReader* reader) {
 				strerror(errno));
 		return false;
 	}
+	
+	si->flags |= FLAG_LINKED;
 
 	return true;
 }

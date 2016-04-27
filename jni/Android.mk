@@ -11,7 +11,7 @@ LOCAL_SRC_FILES:=   \
     main.cpp
     
 
-LOCAL_CFLAGS += -g  -O0 -DANDROID_ARM_LINKER -fpermissive -fvisibility=hidden 
+LOCAL_CFLAGS += -g  -O2 -DANDROID_ARM_LINKER -fpermissive -fvisibility=hidden 
 
 # We need to access Bionic private headers in the linker.
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/../libc/ -I$(LOCAL_PATH)/../libc/include 
